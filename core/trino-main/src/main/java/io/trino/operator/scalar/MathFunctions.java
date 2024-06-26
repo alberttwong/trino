@@ -38,6 +38,7 @@ import io.trino.type.BlockTypeOperators.BlockPositionHashCode;
 import io.trino.type.BlockTypeOperators.BlockPositionIsIdentical;
 import io.trino.type.Constraint;
 import org.apache.commons.math3.distribution.BetaDistribution;
+import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.special.Erf;
 
 import java.math.BigInteger;
@@ -700,6 +701,32 @@ public final class MathFunctions
         checkCondition(a > 0 && b > 0, INVALID_FUNCTION_ARGUMENT, "a, b must be > 0");
         BetaDistribution distribution = new BetaDistribution(null, a, b, BetaDistribution.DEFAULT_INVERSE_ABSOLUTE_ACCURACY);
         return distribution.cumulativeProbability(value);
+    }
+
+    @Description("Students' t-distribution cdf given the x and degrees of freedom")
+    @ScalarFunction
+    @SqlType(StandardTypes.DOUBLE)
+    public static double tCdf(
+            @SqlType(StandardTypes.DOUBLE) double x,
+            @SqlType(StandardTypes.DOUBLE) double degreesOfFreedom)
+    {
+        if (degreesOfFreedom < 1) {
+            throw new TrinoException(INVALID_FUNCTION_ARGUMENT, "degrees of freedom must be greater than or equal to 1");
+        }
+        return new TDistribution(degreesOfFreedom).cumulativeProbability(x);
+    }
+
+    @Description("Students' t-distribution given the x and degrees of freedom")
+    @ScalarFunction(alias = "t_pdf")
+    @SqlType(StandardTypes.DOUBLE)
+    public static double tDistribution(
+            @SqlType(StandardTypes.DOUBLE) double x,
+            @SqlType(StandardTypes.DOUBLE) double degreesOfFreedom)
+    {
+        if (degreesOfFreedom < 1) {
+            throw new TrinoException(INVALID_FUNCTION_ARGUMENT, "degrees of freedom must be greater than or equal to 1");
+        }
+        return new TDistribution(degreesOfFreedom).density(x);
     }
 
     @Description("Round to nearest integer")
